@@ -1,0 +1,154 @@
+@import "tailwindcss";
+
+/* El modo oscuro se activa con <html data-theme="dark"> */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ============================== Tema claro ============================== */
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+  --c-fondo: #ececee;
+  --c-superficie: #ffffff;
+  --c-superficie-2: #f4f6f9; /* opciones en estado neutral */
+  --c-superficie-3: #e9eef6; /* hover */
+  --c-borde: #dde3ec;
+  --c-borde-fuerte: #a9b8cc;
+  --c-circulo: #e1e9f5;
+  --c-circulo-texto: #0b3f8f;
+  --c-texto: #1f2937;
+  --c-primario: #0866e0;
+  --c-primario-2: #3a8bea;
+  --c-primario-suave: #e6f0fd;
+  --c-lila: #efe8f8;
+  --c-lila-borde: #d9cdf3;
+  --c-exito-texto: #13733e;
+  --c-error-texto: #b42318;
+  --c-sidebar: #f7f7f8;
+  --c-sombra: rgba(15, 35, 70, 0.1);
+}
+
+/* ============================== Tema oscuro ============================= */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --c-fondo: #16212c;
+  --c-superficie: #1e2d3d;
+  --c-superficie-2: #243547;
+  --c-superficie-3: #2a3e53;
+  --c-borde: #2d4054;
+  --c-borde-fuerte: #4a6582;
+  --c-circulo: #32485e;
+  --c-circulo-texto: #ffffff;
+  --c-texto: #ffffff;
+  --c-primario: #2f80ed;
+  --c-primario-2: #4c9bf0;
+  --c-primario-suave: #1b3552;
+  --c-lila: #2a3150;
+  --c-lila-borde: #3d4670;
+  --c-exito-texto: #9be7bd;
+  --c-error-texto: #ffb3ac;
+  --c-sidebar: #1a2735;
+  --c-sombra: rgba(0, 0, 0, 0.45);
+}
+
+@theme inline {
+  --color-fondo: var(--c-fondo);
+  --color-superficie: var(--c-superficie);
+  --color-superficie-2: var(--c-superficie-2);
+  --color-superficie-3: var(--c-superficie-3);
+  --color-borde: var(--c-borde);
+  --color-borde-fuerte: var(--c-borde-fuerte);
+  --color-circulo: var(--c-circulo);
+  --color-circulo-texto: var(--c-circulo-texto);
+  --color-texto: var(--c-texto);
+  --color-primario: var(--c-primario);
+  --color-primario-2: var(--c-primario-2);
+  --color-primario-suave: var(--c-primario-suave);
+  --color-lila: var(--c-lila);
+  --color-lila-borde: var(--c-lila-borde);
+  --color-exito-texto: var(--c-exito-texto);
+  --color-error-texto: var(--c-error-texto);
+  --color-sidebar: var(--c-sidebar);
+  --font-sans: var(--font-montserrat), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* Colores de estado fijos (iguales en ambos temas) */
+@theme {
+  --color-error: #d94336;
+  --color-error-borde: #ff6b5e;
+  --color-exito: #2ecc71;
+  --color-dorado: #f5b400;
+}
+
+html,
+body {
+  background-color: var(--c-fondo);
+  color: var(--c-texto);
+  min-height: 100%;
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--c-primario) 35%, transparent);
+}
+
+/* KaTeX hereda el color del contexto y no rompe el layout */
+.katex {
+  font-size: 1.05em;
+  color: inherit;
+}
+.math-block .katex-display {
+  margin: 0.4em 0;
+}
+.math-inline::-webkit-scrollbar,
+.math-block::-webkit-scrollbar {
+  height: 4px;
+}
+.math-inline::-webkit-scrollbar-thumb,
+.math-block::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--c-texto) 25%, transparent);
+  border-radius: 999px;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--c-borde) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================== Impresión =============================== */
+@page {
+  size: A4;
+  margin: 14mm 12mm;
+}
+
+@media print {
+  html,
+  body {
+    background: #ffffff !important;
+    color: #111827 !important;
+  }
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .reporte-bloque {
+    break-inside: avoid;
+  }
+}
