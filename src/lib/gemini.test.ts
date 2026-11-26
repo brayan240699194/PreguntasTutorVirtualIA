@@ -57,10 +57,25 @@ describe("parsearRespuesta", () => {
 describe("ejecutarConRespaldo", () => {
   const conEstado = (status: number) => Object.assign(new Error(`HTTP ${status}`), { status });
 
-  it("reintenta ante un 503 y devuelve el resultado", async () => {
+  it("ante un 503 pasa de inmediato a otro modelo", async () => {
     const fn = vi.fn().mockRejectedValueOnce(conEstado(503)).mockResolvedValueOnce("ok");
+    const inicio = Date.now();
     await expect(ejecutarConRespaldo(fn, Date.now() + 30_000)).resolves.toBe("ok");
     expect(fn).toHaveBeenCalledTimes(2);
+    expect(fn.mock.calls[0]![0]).not.toBe(fn.mock.calls[1]![0]);
+    expect(Date.now() - inicio).toBeLessThan(500);
+  });
+
+  it("ante una cuota agotada (429) pasa a otro modelo", async () => {
+    const fn = vi.fn().mockRejectedValueOnce(conEstado(429)).mockResolvedValueOnce("ok");
+    await expect(ejecutarConRespaldo(fn, Date.now() + 30_000)).resolves.toBe("ok");
+    expect(fn.mock.calls[0]![0]).not.toBe(fn.mock.calls[1]![0]);
+  });
+
+  it("reintenta el mismo modelo ante un 500", async () => {
+    const fn = vi.fn().mockRejectedValueOnce(conEstado(500)).mockResolvedValueOnce("ok");
+    await expect(ejecutarConRespaldo(fn, Date.now() + 30_000)).resolves.toBe("ok");
+    expect(fn.mock.calls[0]![0]).toBe(fn.mock.calls[1]![0]);
   });
 
   it("no reintenta con una clave inválida", async () => {

@@ -204,15 +204,19 @@ export const useQuizStore = create<QuizStore>()(
           finalizadoEn: ahora,
           ultimoResultado: resultado,
           historial: [resultado, ...state.historial].slice(0, MAX_HISTORIAL),
-          analitica: {
-            ...state.analitica,
-            [state.config.area]: {
-              sesiones: areaPrev.sesiones + 1,
-              preguntasRespondidas: areaPrev.preguntasRespondidas + respondidas,
-              aciertos: areaPrev.aciertos + aciertos,
-              ultimaSesion: resultado.fecha,
-            },
-          },
+          // El repaso repite preguntas ya vistas con su solución: no suma al dominio del área.
+          analitica:
+            state.modo === "repaso"
+              ? state.analitica
+              : {
+                  ...state.analitica,
+                  [state.config.area]: {
+                    sesiones: areaPrev.sesiones + 1,
+                    preguntasRespondidas: areaPrev.preguntasRespondidas + respondidas,
+                    aciertos: areaPrev.aciertos + aciertos,
+                    ultimaSesion: resultado.fecha,
+                  },
+                },
         });
         return resultado;
       },

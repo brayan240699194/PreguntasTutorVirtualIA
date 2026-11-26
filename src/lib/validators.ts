@@ -54,8 +54,8 @@ export const generateQuizRequestSchema = z
           .max(TEMA_MAX, `El tema no puede superar ${TEMA_MAX} caracteres.`)
           .refine((t) => /\p{L}/u.test(t), "El tema debe contener letras."),
       ),
-    cantidad: z.union([z.literal(5), z.literal(10), z.literal(15)], {
-      errorMap: () => ({ message: "La cantidad debe ser 5, 10 o 15." }),
+    cantidad: z.union([z.literal(5), z.literal(10)], {
+      errorMap: () => ({ message: "La cantidad debe ser 5 o 10." }),
     }),
     contexto: z
       .string()
@@ -128,6 +128,7 @@ export type PreguntaGenerada = z.infer<typeof preguntaGeneradaSchema>;
 
 export const analisisPlanificacionSchema = z.object({
   esPlanificacionEducativa: z.boolean(),
+  asignatura: z.string().optional(),
   titulo: z.string().trim().min(1).max(300),
   resumen: z.string().trim().min(1).max(2000),
   contexto: z.string().trim().min(1).max(12000),

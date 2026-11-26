@@ -64,7 +64,7 @@ export const GRADOS = [
 ] as const;
 export type GradoId = (typeof GRADOS)[number];
 
-export const CANTIDADES = [5, 10, 15] as const;
+export const CANTIDADES = [5, 10] as const;
 export type CantidadPreguntas = (typeof CANTIDADES)[number];
 
 export const LETRAS = ["A", "B", "C", "D"] as const;
@@ -114,6 +114,11 @@ export interface GenerateQuizResponse {
   generadoEn: string;
 }
 
+export interface EstadoIAResponse {
+  disponible: boolean;
+  verificadoEn: string;
+}
+
 export interface TemaPlanificacion {
   titulo: string;
   descripcion: string;
@@ -134,6 +139,8 @@ export interface AnalizarPlanificacionResponse {
   temas: TemaPlanificacion[];
   paginas: number;
   metodo: MetodoAnalisis;
+  /** Asignatura a la que parece pertenecer el documento (null si no está clara). */
+  areaDetectada: AreaId | null;
 }
 
 export type ApiErrorCode =

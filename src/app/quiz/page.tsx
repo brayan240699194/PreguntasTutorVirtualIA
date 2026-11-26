@@ -236,7 +236,16 @@ export default function QuizPage() {
     setErrorGeneracion(null);
     setGenerando(true);
     try {
-      const data = await solicitarLeccion(config);
+      // Campo por campo: la config guardada puede venir de una versión anterior
+      // (con 15 preguntas o claves que el servidor ya no acepta).
+      const data = await solicitarLeccion({
+        nivel: obtenerGrado(config.grado).nivel,
+        grado: config.grado,
+        area: config.area,
+        tema: config.tema,
+        cantidad: config.cantidad === 5 ? 5 : 10,
+        ...(config.contexto ? { contexto: config.contexto, planificacion: config.planificacion } : {}),
+      });
       iniciarSesion(data.config, data.preguntas, "normal");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
@@ -255,6 +264,8 @@ export default function QuizPage() {
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
+      // Enter o espacio sobre un botón o enlace: que actúe ese control.
+      if ((e.key === "Enter" || e.key === " ") && t?.closest("button, a, select, [role='button']")) return;
 
       const tecla = e.key.toUpperCase();
       const porNumero: Record<string, Letra> = { "1": "A", "2": "B", "3": "C", "4": "D" };

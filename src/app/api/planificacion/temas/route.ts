@@ -18,6 +18,7 @@ import {
   guardarCache,
   leerCache,
 } from "@/lib/pdfTexto";
+import { detectarAsignatura } from "@/lib/asignaturaPdf";
 import { obtenerIp, verificarLimite } from "@/lib/rateLimit";
 import { analizarPlanificacionCamposSchema, formatearErroresZod } from "@/lib/validators";
 import type { AnalizarPlanificacionResponse, ApiErrorResponse } from "@/types/quiz";
@@ -114,6 +115,8 @@ export async function POST(req: NextRequest): Promise<NextResponse<AnalizarPlani
 
   try {
     let resultado: AnalizarPlanificacionResponse;
+    // Asignatura del documento detectada sin IA (códigos de destrezas, encabezado, vocabulario).
+    const areaLocal = esEscaneado(pdf) ? null : detectarAsignatura(pdf.paginas.join("\n"));
 
     // 1) Sin modelo: estructura detectada en el texto (0 tokens).
     const local = esEscaneado(pdf) ? null : analizarLocalmente(pdf, archivo.name);
@@ -125,6 +128,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<AnalizarPlani
         temas: local.temas,
         paginas: pdf.total,
         metodo: "local",
+        areaDetectada: areaLocal,
       };
     } else if (!esEscaneado(pdf)) {
       // 2) Con modelo, pero solo con un extracto acotado del texto.
@@ -136,6 +140,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<AnalizarPlani
         temas: ia.temas.map((t, i) => ({ ...t, contexto: fragmentos[i] })),
         paginas: pdf.total,
         metodo: "texto",
+        areaDetectada: areaLocal ?? ia.areaDetectada,
       };
     } else {
       // 3) PDF escaneado (solo imágenes): el modelo tiene que "verlo", si es corto.

@@ -267,7 +267,8 @@ export function useTutorVoice({ enabled, rate = 1.02, pitch = 1.05, holdMs = 260
         };
         u.onend = finalizar;
         u.onerror = (e: SpeechSynthesisErrorEvent) => {
-          if (e.error === "interrupted" || e.error === "canceled") return;
+          // Si otra instancia (p. ej. el loader) canceló esta locución, igual se cierra
+          // el turno; las cancelaciones propias ya cambiaron el turno y se ignoran.
           finalizar();
         };
 

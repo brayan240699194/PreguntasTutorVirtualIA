@@ -4,6 +4,7 @@ import type {
   GenerateQuizResponse,
   QuizConfig,
 } from "@/types/quiz";
+import { marcarIA } from "@/store/useEstadoIA";
 
 export class QuizApiError extends Error {
   readonly status: number;
@@ -50,12 +51,15 @@ export async function solicitarLeccion(config: QuizConfig, signal?: AbortSignal)
   }
 
   if (!res.ok) {
+    // 5xx: la IA no respondió o no está configurada → credencial naranja.
+    if (res.status >= 500) marcarIA(false);
     const mensaje = esApiError(data) ? data.error : `Error del servidor (${res.status}).`;
     throw new QuizApiError(mensaje, res.status);
   }
   if (!esRespuestaValida(data)) {
     throw new QuizApiError("La respuesta del servidor no tiene preguntas.", res.status);
   }
+  marcarIA(true);
   return data;
 }
 

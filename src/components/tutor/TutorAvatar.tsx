@@ -1,7 +1,8 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { memo, useId } from "react";
+import { memo, useEffect, useId } from "react";
+import { iniciarMonitorIA, useEstadoIA, type EstadoIA } from "@/store/useEstadoIA";
 
 interface TutorAvatarProps {
   isSpeaking: boolean;
@@ -10,6 +11,13 @@ interface TutorAvatarProps {
   size?: number;
   className?: string;
 }
+
+/** Color de la credencial según la conexión con la IA. */
+const CREDENCIAL: Record<EstadoIA, { fondo: string; franja: string; titulo: string }> = {
+  conectada: { fondo: "#22C55E", franja: "#FFFFFF", titulo: "Conectado a la IA" },
+  "sin-ia": { fondo: "#F59E0B", franja: "#FFFFFF", titulo: "Sin conexión con la IA" },
+  verificando: { fondo: "#FFFFFF", franja: "#0866E0", titulo: "Verificando conexión con la IA" },
+};
 
 const ORIGEN_CENTRO = { transformBox: "fill-box", transformOrigin: "center" } as const;
 const ORIGEN_BASE = { transformBox: "fill-box", transformOrigin: "50% 100%" } as const;
@@ -30,6 +38,9 @@ const PATRONES_BOCA: readonly number[][] = [
 function TutorAvatarBase({ isSpeaking, wordIndex = 0, size = 160, className }: TutorAvatarProps) {
   const reducir = useReducedMotion();
   const uid = useId().replace(/:/g, "");
+  const estadoIA = useEstadoIA((s) => s.estado);
+  const credencial = CREDENCIAL[estadoIA];
+  useEffect(() => iniciarMonitorIA(), []);
   const patron = PATRONES_BOCA[Math.abs(wordIndex) % PATRONES_BOCA.length] ?? [1.5, 6, 1.5];
 
   const idPiel = `piel-${uid}`;
@@ -43,7 +54,8 @@ function TutorAvatarBase({ isSpeaking, wordIndex = 0, size = 160, className }: T
       style={{ width: size, height: size }}
       animate={reducir ? undefined : { y: [0, -4, 0] }}
       transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
-      aria-label={isSpeaking ? "Docente virtual hablando" : "Docente virtual escuchando"}
+      aria-label={`${isSpeaking ? "Docente virtual hablando" : "Docente virtual escuchando"}. ${credencial.titulo}.`}
+      title={credencial.titulo}
       role="img"
     >
       <svg viewBox="0 0 200 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -114,10 +126,12 @@ function TutorAvatarBase({ isSpeaking, wordIndex = 0, size = 160, className }: T
           <path d="M112 150 L 122 166 L 108 172 L 100 186 Z" fill="#0A5BCB" />
           {/* Botón */}
           <circle cx={100} cy={192} r={2.6} fill="#E8F1FF" />
-          {/* Credencial / gafete */}
-          <rect x={118} y={174} width={18} height={13} rx={2.5} fill="#FFFFFF" />
-          <rect x={121} y={177} width={7} height={2.2} rx={1} fill="#0866E0" />
-          <rect x={121} y={181.5} width={12} height={1.8} rx={0.9} fill="#B8C7DB" />
+          {/* Credencial / gafete: verde = con IA, naranja = sin IA (banco local) */}
+          <g data-estado-ia={estadoIA}>
+            <rect x={117} y={172} width={21} height={15} rx={2.8} fill={credencial.fondo} stroke="#FFFFFF" strokeWidth={1.2} style={{ transition: "fill 0.4s ease" }} />
+            <rect x={120} y={175.5} width={8} height={2.4} rx={1} fill={credencial.franja} />
+            <rect x={120} y={180.5} width={14} height={2} rx={1} fill={credencial.franja} opacity={0.75} />
+          </g>
           {/* Libro bajo el brazo */}
           <g transform="rotate(-12 58 184)">
             <rect x={42} y={172} width={34} height={24} rx={2.5} fill="#F5B400" />

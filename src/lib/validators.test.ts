@@ -39,8 +39,9 @@ describe("generateQuizRequestSchema", () => {
     expect(r.success).toBe(false);
   });
 
-  it("rechaza cantidades distintas de 5, 10 o 15", () => {
+  it("rechaza cantidades distintas de 5 o 10", () => {
     expect(generateQuizRequestSchema.safeParse({ ...valido, cantidad: 7 }).success).toBe(false);
+    expect(generateQuizRequestSchema.safeParse({ ...valido, cantidad: 15 }).success).toBe(false);
   });
 
   it("rechaza campos desconocidos", () => {
