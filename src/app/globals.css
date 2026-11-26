@@ -7,7 +7,7 @@
 :root,
 :root[data-theme="light"] {
   color-scheme: light;
-  --c-fondo: #ececee;
+  --c-fondo: #eaf3ff;
   --c-superficie: #ffffff;
   --c-superficie-2: #f4f6f9; /* opciones en estado neutral */
   --c-superficie-3: #e9eef6; /* hover */
@@ -25,6 +25,11 @@
   --c-error-texto: #b42318;
   --c-sidebar: #f7f7f8;
   --c-sombra: rgba(15, 35, 70, 0.1);
+  /* Burbujas decorativas del fondo */
+  --c-burbuja-1: rgba(255, 196, 61, 0.22);
+  --c-burbuja-2: rgba(84, 214, 160, 0.2);
+  --c-burbuja-3: rgba(255, 128, 171, 0.16);
+  --c-burbuja-4: rgba(77, 150, 255, 0.18);
 }
 
 /* ============================== Tema oscuro ============================= */
@@ -48,6 +53,10 @@
   --c-error-texto: #ffb3ac;
   --c-sidebar: #1a2735;
   --c-sombra: rgba(0, 0, 0, 0.45);
+  --c-burbuja-1: rgba(255, 196, 61, 0.07);
+  --c-burbuja-2: rgba(84, 214, 160, 0.06);
+  --c-burbuja-3: rgba(255, 128, 171, 0.05);
+  --c-burbuja-4: rgba(77, 150, 255, 0.08);
 }
 
 @theme inline {
@@ -68,7 +77,7 @@
   --color-exito-texto: var(--c-exito-texto);
   --color-error-texto: var(--c-error-texto);
   --color-sidebar: var(--c-sidebar);
-  --font-sans: var(--font-montserrat), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: var(--font-principal), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 /* Colores de estado fijos (iguales en ambos temas) */
@@ -90,9 +99,35 @@ body {
 }
 
 body {
+  /* Fondo de «cielo» con burbujas suaves de colores, fijo al hacer scroll. */
+  background-image:
+    radial-gradient(circle at 8% 12%, var(--c-burbuja-1) 0 90px, transparent 91px),
+    radial-gradient(circle at 92% 8%, var(--c-burbuja-2) 0 120px, transparent 121px),
+    radial-gradient(circle at 85% 78%, var(--c-burbuja-3) 0 140px, transparent 141px),
+    radial-gradient(circle at 5% 85%, var(--c-burbuja-4) 0 110px, transparent 111px),
+    radial-gradient(circle at 50% 45%, var(--c-burbuja-1) 0 36px, transparent 37px);
+  background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Botón «presionable»: sombra inferior sólida que se hunde al tocarlo.
+   En la capa components para que las utilidades de Tailwind puedan sobrescribirlo. */
+@layer components {
+.boton-3d {
+  --boton-sombra: color-mix(in oklab, currentColor 22%, transparent);
+  box-shadow: 0 4px 0 var(--boton-sombra);
+  transition:
+    transform 0.08s ease,
+    box-shadow 0.08s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+.boton-3d:not(:disabled):active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--boton-sombra);
+}
 }
 
 ::selection {

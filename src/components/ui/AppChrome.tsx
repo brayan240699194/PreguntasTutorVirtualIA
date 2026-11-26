@@ -37,27 +37,63 @@ export function BandaTitulo({ children }: { children: ReactNode }) {
   );
 }
 
-/** Tarjeta blanca con cabecera lila (como el panel "Certificados"). */
+/** Colores alegres para el número de cada paso. */
+const COLORES_PASO = ["#2D7FF9", "#22A45D", "#F08A24", "#8B5CF6", "#E85D8A"];
+
+/**
+ * Tarjeta de un paso del formulario. Con `paso`, la cabecera muestra un número
+ * grande de color y un emoji; sin él, conserva la cabecera lila clásica.
+ */
 export function Panel({
   titulo,
   children,
   className = "",
   id,
+  paso,
+  emoji,
 }: {
   titulo: ReactNode;
   children: ReactNode;
   className?: string;
   id?: string;
+  paso?: number;
+  emoji?: string;
 }) {
+  if (paso === undefined) {
+    return (
+      <section
+        id={id}
+        className={`min-w-0 rounded-xl bg-superficie p-2 shadow-[0_2px_12px_var(--c-sombra)] sm:p-4 ${className}`}
+      >
+        <div className="overflow-hidden rounded-lg border border-lila-borde">
+          <div className="border-b border-lila-borde bg-lila px-4 py-2.5 text-center text-sm font-bold">{titulo}</div>
+          <div className="p-3 sm:p-4">{children}</div>
+        </div>
+      </section>
+    );
+  }
+  const color = COLORES_PASO[(paso - 1) % COLORES_PASO.length];
   return (
     <section
       id={id}
-      className={`min-w-0 rounded-xl bg-superficie p-2 shadow-[0_2px_12px_var(--c-sombra)] sm:p-4 ${className}`}
+      className={`min-w-0 rounded-3xl border-2 border-borde bg-superficie p-3 shadow-[0_6px_0_var(--c-borde),0_10px_24px_-12px_var(--c-sombra)] sm:p-5 ${className}`}
     >
-      <div className="overflow-hidden rounded-lg border border-lila-borde">
-        <div className="border-b border-lila-borde bg-lila px-4 py-2.5 text-center text-sm font-bold">{titulo}</div>
-        <div className="p-3 sm:p-4">{children}</div>
-      </div>
+      <h2 className="mb-3 flex items-center gap-3 sm:mb-4">
+        <span
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-lg font-black text-white shadow-[0_3px_0_rgba(0,0,0,0.18)] sm:h-11 sm:w-11 sm:text-xl"
+          style={{ backgroundColor: color }}
+          aria-hidden
+        >
+          {paso}
+        </span>
+        <span className="min-w-0 flex-1 text-lg font-extrabold leading-tight sm:text-xl">{titulo}</span>
+        {emoji && (
+          <span className="shrink-0 text-2xl sm:text-3xl" aria-hidden>
+            {emoji}
+          </span>
+        )}
+      </h2>
+      {children}
     </section>
   );
 }

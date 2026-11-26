@@ -52,6 +52,9 @@ function AvisoBloqueo() {
   );
 }
 
+/** Dibujo de cada nivel educativo. */
+const EMOJI_NIVEL: Record<NivelId, string> = { inicial: "🧸", egb: "✏️", bgu: "🎓" };
+
 function formatearFecha(iso: string): string {
   return new Date(iso).toLocaleDateString("es-EC", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
 }
@@ -220,14 +223,15 @@ export default function HomeClient({ pdfHabilitado }: { pdfHabilitado: boolean }
       <BandaTitulo>Lecciones interactivas · Tutor virtual</BandaTitulo>
 
       {/* Presentación */}
-      <section className="mt-3 flex items-center gap-3 rounded-xl bg-superficie p-4 shadow-[0_2px_12px_var(--c-sombra)] sm:mt-4 sm:gap-6 sm:p-6">
+      <section className="mt-3 flex items-center gap-3 rounded-3xl border-2 border-borde bg-superficie p-4 shadow-[0_6px_0_var(--c-borde),0_10px_24px_-12px_var(--c-sombra)] sm:mt-4 sm:gap-6 sm:p-6">
         <div className="min-w-0 flex-1">
-          <h1 className="text-xl font-extrabold leading-tight sm:text-3xl lg:text-4xl">
-            Aprende con <span className="text-primario">tu tutor virtual</span>
+          <p className="text-sm font-extrabold text-primario sm:text-base">¡Hola! 👋</p>
+          <h1 className="mt-0.5 text-2xl font-black leading-tight sm:text-4xl lg:text-5xl">
+            ¿Qué vamos a <span className="text-primario">aprender hoy</span>?
           </h1>
-          <p className="mt-1.5 text-sm font-medium text-texto/70 sm:mt-2 sm:text-base">
-            Elige tu nivel, grado y asignatura según el currículo del Ministerio de Educación. El tutor te explica cada
-            respuesta con voz y subtítulos, y al final puedes imprimir tu informe.
+          <p className="mt-2 text-sm font-semibold text-texto/70 sm:text-lg">
+            Elige tu grado y tu materia. Yo te leo las preguntas, te ayudo cuando te equivocas y celebro contigo cada
+            acierto. 🌟
           </p>
         </div>
         <TutorAvatar isSpeaking={false} size={76} className="shrink-0 md:hidden" />
@@ -262,8 +266,8 @@ export default function HomeClient({ pdfHabilitado }: { pdfHabilitado: boolean }
 
       <form onSubmit={comenzar} className="mt-3 space-y-3 sm:mt-4 sm:space-y-4" noValidate>
         {/* 1. Nivel y grado */}
-        <Panel titulo="1 · Nivel educativo y grado">
-          <div className="grid grid-cols-1 gap-1.5 rounded-xl bg-superficie-2 p-1.5 min-[400px]:grid-cols-3" role="group" aria-label="Nivel educativo">
+        <Panel paso={1} emoji="🎒" titulo="¿En qué nivel estás?">
+          <div className="grid grid-cols-1 gap-2 min-[400px]:grid-cols-3 sm:gap-3" role="group" aria-label="Nivel educativo">
             {NIVELES_INFO.map((n) => {
               const activo = n.id === nivel;
               return (
@@ -273,22 +277,20 @@ export default function HomeClient({ pdfHabilitado }: { pdfHabilitado: boolean }
                   onClick={() => elegirNivel(n.id)}
                   disabled={bloqueadoPorPdf && !activo}
                   aria-pressed={activo}
-                  className={`relative flex disabled:cursor-not-allowed disabled:opacity-40 min-h-[48px] min-w-0 items-center justify-between gap-2 rounded-lg px-3 py-2 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primario min-[400px]:block min-[400px]:min-h-[56px] min-[400px]:px-2 min-[400px]:text-center sm:px-4 sm:text-left ${
-                    activo ? "text-white" : "text-texto/75 hover:bg-superficie-3"
+                  className={`boton-3d relative flex min-h-[64px] min-w-0 items-center gap-3 rounded-2xl border-2 px-3 py-2.5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primario disabled:cursor-not-allowed disabled:opacity-40 min-[400px]:flex-col min-[400px]:gap-1 min-[400px]:px-2 min-[400px]:py-3 min-[400px]:text-center ${
+                    activo
+                      ? "border-primario bg-primario text-white"
+                      : "border-borde bg-superficie-2 text-texto/80 hover:border-borde-fuerte"
                   }`}
                 >
-                  {activo && (
-                    <motion.span
-                      layoutId="nivel-activo"
-                      className="absolute inset-0 rounded-lg bg-primario shadow"
-                      transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                    />
-                  )}
-                  <span className="relative block min-w-0 break-words text-sm font-bold leading-tight">
+                  <span className="relative text-3xl leading-none sm:text-4xl" aria-hidden>
+                    {EMOJI_NIVEL[n.id]}
+                  </span>
+                  <span className="relative block min-w-0 break-words text-sm font-extrabold leading-tight sm:text-base">
                     <span className="lg:hidden">{n.corto}</span>
                     <span className="hidden lg:inline">{n.nombre}</span>
                   </span>
-                  <span className={`relative block shrink-0 text-[11px] font-medium ${activo ? "text-white/85" : "text-texto/50"}`}>
+                  <span className={`relative ml-auto block shrink-0 text-xs font-semibold min-[400px]:ml-0 ${activo ? "text-white/85" : "text-texto/55"}`}>
                     {n.descripcion}
                   </span>
                 </button>
@@ -318,7 +320,7 @@ export default function HomeClient({ pdfHabilitado }: { pdfHabilitado: boolean }
                         disabled={bloqueadoPorPdf && !activo}
                         aria-pressed={activo}
                         title={`${g.nombre} · ${g.edad}`}
-                        className={`min-h-[44px] min-w-[48px] rounded-lg border-2 disabled:cursor-not-allowed disabled:opacity-40 px-2.5 text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primario ${
+                        className={`boton-3d min-h-[48px] min-w-[56px] rounded-2xl border-2 text-base disabled:cursor-not-allowed disabled:opacity-40 px-2.5 text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primario ${
                           activo
                             ? "border-primario bg-primario-suave text-primario"
                             : "border-borde bg-superficie-2 text-texto/80 hover:border-borde-fuerte"
@@ -354,7 +356,7 @@ export default function HomeClient({ pdfHabilitado }: { pdfHabilitado: boolean }
         {/* 2. Asignatura (aparece al elegir el grado) */}
         {grado && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-            <Panel titulo={nivel === "inicial" ? "2 · Ámbito de desarrollo" : "2 · Asignatura"}>
+            <Panel paso={2} emoji="📚" titulo={nivel === "inicial" ? "¿Qué quieres explorar?" : "¿Qué materia quieres practicar?"}>
               <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,140px),1fr))] gap-2 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] sm:gap-3" role="group" aria-label="Asignatura">
                 {areas.map((a) => {
                   const activa = a.id === area;
@@ -367,10 +369,10 @@ export default function HomeClient({ pdfHabilitado }: { pdfHabilitado: boolean }
                       onClick={() => setArea(a.id)}
                       disabled={bloqueadoPorPdf && !activa}
                       aria-pressed={activa}
-                      className={`flex min-h-[60px] disabled:cursor-not-allowed disabled:opacity-40 min-w-0 items-center gap-2 rounded-xl border-2 p-2 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primario sm:flex-col sm:items-start sm:gap-2 sm:p-4 ${
+                      className={`boton-3d flex min-h-[64px] rounded-2xl disabled:cursor-not-allowed disabled:opacity-40 min-w-0 items-center gap-2 border-2 p-2 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primario sm:flex-col sm:items-start sm:gap-2 sm:p-4 ${
                         activa
                           ? "border-[var(--acento)] bg-superficie shadow-[0_0_0_1px_var(--acento),0_10px_24px_-14px_var(--acento)]"
-                          : "border-borde bg-superficie-2 shadow-none hover:border-borde-fuerte"
+                          : "border-borde bg-superficie-2 hover:border-borde-fuerte"
                       }`}
                       // El color va en una variable y las clases deciden si se pinta: framer-motion
                       // no limpia un borderColor en línea al quitarlo, y el borde anterior quedaba pintado.
@@ -401,7 +403,7 @@ export default function HomeClient({ pdfHabilitado }: { pdfHabilitado: boolean }
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 sm:space-y-4">
             <div className="grid gap-3 sm:gap-4 xl:grid-cols-[1.6fr_1fr]">
               {/* 3. Tema */}
-              <Panel titulo="3 · Tema de la lección">
+              <Panel paso={3} emoji="💡" titulo="¿Sobre qué tema?">
                 {pdfHabilitado && (
                   <div className="mb-3 grid grid-cols-2 gap-1.5 rounded-xl bg-superficie-2 p-1.5" role="tablist" aria-label="Origen del tema">
                     {(
@@ -546,7 +548,7 @@ export default function HomeClient({ pdfHabilitado }: { pdfHabilitado: boolean }
               </Panel>
     
               {/* 4. Cantidad */}
-              <Panel titulo="4 · Cantidad de preguntas">
+              <Panel paso={4} emoji="🎯" titulo="¿Cuántas preguntas?">
                 <div className="flex gap-2 sm:gap-3" role="group" aria-label="Cantidad de preguntas">
                   {CANTIDADES.map((c) => (
                     <button
@@ -554,19 +556,22 @@ export default function HomeClient({ pdfHabilitado }: { pdfHabilitado: boolean }
                       type="button"
                       onClick={() => setCantidad(c)}
                       aria-pressed={cantidad === c}
-                      className={`flex h-16 flex-1 flex-col items-center justify-center rounded-xl border-2 font-extrabold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primario sm:h-20 ${
+                      className={`boton-3d flex h-24 flex-1 flex-col items-center justify-center rounded-2xl border-2 font-extrabold focus:outline-none focus-visible:ring-2 focus-visible:ring-primario sm:h-28 ${
                         cantidad === c
-                          ? "border-primario bg-primario text-white shadow-[0_8px_20px_-10px_rgba(8,102,224,0.9)]"
-                          : "border-borde bg-superficie-2 text-texto/75 hover:border-borde-fuerte"
+                          ? "border-primario bg-primario text-white"
+                          : "border-borde bg-superficie-2 text-texto/80 hover:border-borde-fuerte"
                       }`}
                     >
-                      <span className="text-2xl leading-none sm:text-3xl">{c}</span>
-                      <span className="mt-1 text-[10px] font-bold uppercase opacity-80">preguntas</span>
+                      <span className="text-sm leading-none" aria-hidden>
+                        {c === 5 ? "⭐" : "⭐⭐"}
+                      </span>
+                      <span className="mt-1 text-3xl leading-none sm:text-4xl">{c}</span>
+                      <span className="mt-1 text-xs font-bold opacity-85">{c === 5 ? "Rapidito" : "Gran reto"}</span>
                     </button>
                   ))}
                 </div>
                 <p className="mt-3 text-center text-xs font-medium text-texto/55">
-                  {cantidad ? `Tiempo estimado: ${cantidad === 5 ? "5–8" : "10–15"} minutos` : "Elige cuántas preguntas quieres responder."}
+                  {cantidad ? `⏱️ Unos ${cantidad === 5 ? "5 a 8" : "10 a 15"} minutos` : "Elige cuántas preguntas quieres responder."}
                 </p>
               </Panel>
             </div>
@@ -590,10 +595,10 @@ export default function HomeClient({ pdfHabilitado }: { pdfHabilitado: boolean }
           type="submit"
           disabled={cargando}
           whileTap={{ scale: 0.985 }}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-primario px-4 py-4 text-base font-bold text-white shadow-[0_12px_28px_-12px_rgba(8,102,224,0.9)] transition hover:brightness-110 focus:outline-none focus-visible:ring-4 focus-visible:ring-primario/40 disabled:opacity-60 sm:gap-3 sm:text-lg"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#22A45D] px-4 py-5 text-lg font-black text-white shadow-[0_6px_0_#167a43] transition hover:brightness-105 focus:outline-none focus-visible:ring-4 focus-visible:ring-[#22A45D]/40 active:translate-y-1 active:shadow-[0_2px_0_#167a43] disabled:opacity-60 sm:gap-3 sm:text-2xl"
         >
-          <Play className="h-5 w-5 shrink-0" aria-hidden />
-          Comenzar Lección con Tutor
+          <Play className="h-6 w-6 shrink-0 fill-current" aria-hidden />
+          ¡Comenzar mi lección! 🚀
           <ArrowRight className="hidden h-5 w-5 shrink-0 sm:block" aria-hidden />
         </motion.button>
         </motion.div>

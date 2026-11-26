@@ -1,12 +1,21 @@
 import type { Metadata, Viewport } from "next";
-import { Montserrat } from "next/font/google";
+import { Montserrat, Nunito } from "next/font/google";
 import "katex/dist/katex.min.css";
 import "./globals.css";
 import { CLAVE_TEMA } from "@/lib/tema";
 
-const montserrat = Montserrat({
+/** Tipografía redondeada y muy legible, pensada para lectores que empiezan. */
+const nunito = Nunito({
   subsets: ["latin", "latin-ext"],
   weight: ["400", "500", "600", "700", "800", "900"],
+  variable: "--font-principal",
+  display: "swap",
+});
+
+/** Solo para el logotipo de Prolipa, que conserva su tipografía de marca. */
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["700", "900"],
   variable: "--font-montserrat",
   display: "swap",
 });
@@ -32,7 +41,7 @@ const scriptTema = `(function(){try{var t=localStorage.getItem(${JSON.stringify(
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" data-theme="light" className={montserrat.variable} suppressHydrationWarning>
+    <html lang="es" data-theme="light" className={`${nunito.variable} ${montserrat.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: scriptTema }} />
       </head>

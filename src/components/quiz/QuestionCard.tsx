@@ -1,7 +1,7 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
-import { CircleCheck, CircleX, ThumbsDown, ThumbsUp, Volume2 } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { CircleCheck, CircleX, Lightbulb, ThumbsDown, ThumbsUp, Volume2 } from "lucide-react";
 import MathText from "@/components/MathText";
 import type { Calificacion, Letra, Opcion, Pregunta, RespuestaUsuario } from "@/types/quiz";
 
@@ -29,14 +29,51 @@ function estadoDeOpcion(opcion: Opcion, pregunta: Pregunta, respuesta: Respuesta
 const estilosOpcion: Record<EstadoOpcion, string> = {
   neutral:
     "bg-superficie-2 border-borde text-texto hover:border-borde-fuerte hover:bg-superficie-3 active:scale-[0.99] cursor-pointer",
-  incorrecta: "bg-error border-error-borde text-white",
+  // Naranja en vez de rojo intenso: equivocarse es parte de aprender.
+  incorrecta: "bg-[#E8743B] border-[#F7A072] text-white",
   correcta:
     "bg-superficie-2 border-exito text-texto shadow-[0_0_0_1px_#2ECC71,0_0_22px_-4px_rgba(46,204,113,0.65)]",
   atenuada: "bg-superficie-2 border-borde text-texto opacity-55",
 };
 
+/** Cada letra tiene su color: ayuda a los niños a ubicar y nombrar las opciones. */
+const COLOR_LETRA: Record<Letra, string> = {
+  A: "bg-[#FF6B6B] text-white",
+  B: "bg-[#2D7FF9] text-white",
+  C: "bg-[#22A45D] text-white",
+  D: "bg-[#F5A623] text-white",
+};
+
+/** Mensajes de ánimo: nunca «Incorrecto» a secas. */
+const TITULOS_ACIERTO = ["¡Muy bien! 🎉", "¡Excelente! ⭐", "¡Lo lograste! 🙌", "¡Genial! 🚀"];
+const TITULOS_ERROR = ["¡Casi! 💪", "¡Sigue intentando! 🌱", "¡Tú puedes! 💡"];
+
+const ESTRELLAS = ["⭐", "🌟", "✨", "🎉", "⭐", "✨", "🌟", "🎊"];
+
+/** Pequeña lluvia de estrellas que sale de la tarjeta al acertar. */
+function Celebracion() {
+  return (
+    <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center" aria-hidden>
+      {ESTRELLAS.map((e, i) => {
+        const angulo = (i / ESTRELLAS.length) * Math.PI * 2;
+        return (
+          <motion.span
+            key={i}
+            className="absolute text-2xl sm:text-3xl"
+            initial={{ x: 0, y: 30, opacity: 1, scale: 0.4 }}
+            animate={{ x: Math.cos(angulo) * 150, y: 30 + Math.sin(angulo) * 90, opacity: 0, scale: 1.3, rotate: 180 }}
+            transition={{ duration: 1.1, ease: "easeOut" }}
+          >
+            {e}
+          </motion.span>
+        );
+      })}
+    </div>
+  );
+}
+
 const estilosCirculo: Record<EstadoOpcion, string> = {
-  neutral: "bg-circulo text-circulo-texto",
+  neutral: "",
   incorrecta: "bg-white/25 text-white",
   correcta: "bg-exito text-[#0E2A1B] shadow-[0_0_14px_rgba(46,204,113,0.8)]",
   atenuada: "bg-circulo text-circulo-texto/70",
@@ -55,6 +92,11 @@ export default function QuestionCard({
   const respondida = Boolean(respuesta);
   const acerto = respuesta?.esCorrecta ?? false;
   const opcionCorrecta = pregunta.opciones.find((o) => o.letra === pregunta.letraCorrecta);
+  const reducirMovimiento = useReducedMotion();
+  // El título varía con el número de pregunta para no repetir siempre el mismo.
+  const tituloBanner = acerto
+    ? TITULOS_ACIERTO[numero % TITULOS_ACIERTO.length]
+    : TITULOS_ERROR[numero % TITULOS_ERROR.length];
 
   return (
     <motion.article
@@ -63,9 +105,12 @@ export default function QuestionCard({
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -24 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className="overflow-hidden rounded-3xl bg-superficie shadow-[0_4px_20px_var(--c-sombra)]"
+      className="relative overflow-hidden rounded-3xl border-2 border-borde bg-superficie shadow-[0_6px_0_var(--c-borde),0_10px_24px_-12px_var(--c-sombra)]"
       aria-labelledby={`enunciado-${pregunta.id}`}
     >
+      {/* Solo justo al acertar, no al volver a una pregunta ya respondida. */}
+      {respuesta && acerto && !reducirMovimiento && Date.now() - respuesta.respondidaEn < 1500 && <Celebracion />}
+
       {/* Banner explicativo superior */}
       <AnimatePresence initial={false}>
         {respondida && (
@@ -79,18 +124,16 @@ export default function QuestionCard({
             <div
               role="alert"
               className={`flex items-start gap-3 px-5 py-4 text-sm font-semibold leading-relaxed text-white sm:px-7 sm:text-base ${
-                acerto ? "bg-[#1F9D57]" : "bg-[#D94336]"
+                acerto ? "bg-[#1F9D57]" : "bg-[#E8743B]"
               }`}
             >
               {acerto ? (
-                <CircleCheck className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
+                <CircleCheck className="mt-1 h-5 w-5 shrink-0" aria-hidden />
               ) : (
-                <CircleX className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
+                <Lightbulb className="mt-1 h-5 w-5 shrink-0" aria-hidden />
               )}
               <div>
-                <span className="mb-0.5 block text-xs font-extrabold uppercase tracking-wider text-white/80">
-                  {acerto ? "¡Correcto!" : "Incorrecto"}
-                </span>
+                <span className="mb-0.5 block text-lg font-black sm:text-xl">{tituloBanner}</span>
                 <MathText text={pregunta.bannerExplicacion} />
               </div>
             </div>
@@ -100,7 +143,7 @@ export default function QuestionCard({
 
       <div className="px-4 pb-4 pt-5 sm:px-7 sm:pb-6 sm:pt-7">
         <div className="flex items-center justify-between gap-3">
-          <span className="text-xs font-bold uppercase tracking-[0.16em] text-texto/50">
+          <span className="rounded-full bg-primario-suave px-3 py-1 text-xs font-extrabold text-primario sm:text-sm">
             Pregunta {numero} de {total}
           </span>
           {onEscuchar && (
@@ -116,7 +159,7 @@ export default function QuestionCard({
         </div>
         <h2
           id={`enunciado-${pregunta.id}`}
-          className="mt-2 text-lg font-bold leading-snug sm:text-xl"
+          className="mt-2 text-xl font-extrabold leading-snug sm:text-2xl"
         >
           <MathText text={pregunta.enunciado} />
         </h2>
@@ -147,15 +190,17 @@ export default function QuestionCard({
                   aria-label={`Opción ${opcion.letra}: ${opcion.texto}${
                     estado === "correcta" ? " (respuesta correcta)" : estado === "incorrecta" ? " (incorrecta)" : ""
                   }`}
-                  className={`group flex w-full items-start gap-3.5 rounded-2xl border-2 px-3.5 py-3.5 text-left transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primario disabled:cursor-default sm:px-4 ${estilosOpcion[estado]}`}
+                  className={`boton-3d group flex w-full items-start gap-3.5 rounded-2xl border-2 px-3.5 py-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primario disabled:cursor-default sm:px-4 ${estilosOpcion[estado]}`}
                 >
                   <span
-                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-extrabold transition-all duration-200 ${estilosCirculo[estado]}`}
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-base font-black transition-all duration-200 ${
+                      estado === "neutral" ? COLOR_LETRA[opcion.letra] : estilosCirculo[estado]
+                    }`}
                     aria-hidden
                   >
                     {opcion.letra}
                   </span>
-                  <span className="min-w-0 flex-1 break-words pt-1.5 text-[15px] font-semibold leading-snug sm:text-base">
+                  <span className="min-w-0 flex-1 break-words pt-2 text-base font-bold leading-snug sm:text-lg">
                     <MathText text={opcion.texto} />
                     <AnimatePresence initial={false}>
                       {mostrarFeedback && (
@@ -186,9 +231,9 @@ export default function QuestionCard({
           <span className="text-xs font-semibold text-texto/55">
             {respondida
               ? acerto
-                ? "¡Bien hecho! ¿Te resultó útil esta pregunta?"
-                : `Respuesta correcta: ${opcionCorrecta?.letra ?? ""}. ¿Te resultó útil esta pregunta?`
-              : "Elige una opción (teclas A–D o 1–4)"}
+                ? "¡Bien hecho! ¿Te gustó esta pregunta?"
+                : `La respuesta correcta era la ${opcionCorrecta?.letra ?? ""}. ¡La próxima te sale! ¿Te gustó esta pregunta?`
+              : "👆 Toca la respuesta que creas correcta"}
           </span>
           <div className="flex items-center gap-2" role="group" aria-label="Calificar pregunta">
             <button
